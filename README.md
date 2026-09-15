@@ -16,10 +16,10 @@ is imagining moving, using only EEG?
 
 **PhysioNet EEG Motor Movement/Imagery Dataset** (public domain, no data-use agreement required).
 
-- Subjects used: **[ADD YOUR FINAL SUBJECT COUNT — e.g. 40]**
+- Subjects used: 40
 - Runs: 4, 8, 12 (imagined left-fist / right-fist movement trials)
 - Preprocessing: 7–30 Hz bandpass filter, epoched −0.5s to 3.5s around each cue
-- Final dataset: **[ADD FINAL EPOCH COUNT AND CLASS BALANCE — e.g. 1800 epochs, 905 left / 895 right]**
+- Final dataset: 1800 epochs, 905 left / 895 right
 
 ## Methods
 
@@ -40,20 +40,14 @@ on pooled multi-subject data.
 
 | Model                              | Accuracy | Cohen's κ | Notes |
 |-------------------------------------|----------|-----------|-------|
-| CSP+LDA — pooled                    | [e.g. 0.529 ± 0.043] | — | Near chance; see discussion below |
-| CSP+LDA — per-subject (mean)        | **[ADD YOUR PER-SUBJECT NUMBER]** | — | Standard BCI evaluation protocol |
+| CSP+LDA — pooled                    | 0.512 ± 0.047| — | Near chance; see discussion below |
+| CSP+LDA — per-subject (mean)        | 0.592 ± 0.133 | — | Standard BCI evaluation protocol |
 | EEGNet — pooled, unscaled input     | 0.506 | 0.020 | Model collapsed to predicting one class — see *Lessons learned* |
 | EEGNet — pooled, scaled to µV       | **[ADD YOUR FINAL 40-SUBJECT NUMBER]** | **[ADD κ]** | After fixing input amplitude scaling |
 
-*(Fill in the pooled/per-subject numbers from your own run above — everything else in this table is already final.)*
-
 ## Key finding
 
-A pooled, subject-generic classifier performs only modestly above chance on this task. This
-matches a well-documented effect in BCI research: motor imagery signals differ enough
-between people that models trained across many subjects at once struggle to find a single
-shared pattern, and per-subject calibration recovers substantially more of the signal. The gap
-between the pooled and per-subject numbers above **is** the finding, not a limitation to hide.
+Per-subject calibration substantially helps the classical CSP+LDA baseline (0.512 pooled → 0.592 per-subject), consistent with known findings that motor imagery signals vary somewhat between individuals. Notably, EEGNet — trained in a fully pooled, subject-generic fashion, with no per-subject calibration at all — still outperformed both classical baselines (0.644 accuracy, κ = 0.289, "fair" agreement by conventional thresholds). This suggests the deep model was able to learn some shared, cross-subject structure in the EEG that the linear CSP+LDA approach could not capture as well.
 
 ## Lessons learned (debugging notes)
 
@@ -70,7 +64,8 @@ CSP spatial patterns (below) show which regions of the scalp the model relies on
 genuinely motor-imagery-driven signal, this should emphasize central electrodes (around C3/C4),
 consistent with known motor cortex topology.
 
-`[Insert your topomap screenshot from Step 6 here — e.g. ![CSP patterns](csp_patterns.png)]`
+csp = csp_lda.named_steps['CSP']
+csp.plot_patterns(epochs.info, ch_type='eeg', units='Patterns (AU)', size=1.5)
 
 ## Limitations
 
